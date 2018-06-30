@@ -52,7 +52,7 @@ def calculate_best_penalty(X_train, y_train, X_train_penalty, y_train_penalty):
         penalty_values.append(penalty)
         predictions = svr_predict_stock_price(penalty, X_train, y_train, X_train_penalty)
         penalty_scores.append(r2_score(y_train_penalty, predictions))
-        best_penalty = penalty_values[penalty_scores.index(max(penalty_scores))]
+    best_penalty = penalty_values[penalty_scores.index(max(penalty_scores))]
     return best_penalty
 
 define_quandl_api_key("5BBkZzTWi4Lmsh8MyRyT")
