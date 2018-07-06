@@ -9,6 +9,20 @@ from random import randint
 from sklearn.metrics import r2_score
 
 # Functions
+def get_quandl_data(quandl_id):
+    """Download and cache Quandl dataseries"""
+    cache_path = 'quandl_data/{}.pkl'.format(quandl_id.replace('/','-'))
+    try:
+        f = open(cache_path, 'rb')
+        df = pickle.load(f)
+        print('Loaded {} from cache'.format(quandl_id))
+    except (OSError, IOError) as e:
+        print('Downloading {} from Quandl'.format(quandl_id))
+        df = quandl.get(quandl_id, returns="pandas")
+        df.to_pickle(cache_path)
+        print('Cached {} at {}'.format(quandl_id, cache_path))
+    return df
+
 def define_quandl_api_key(api_key):
     """Defines the api_key as the token for using Quandl"""
     quandl.ApiConfig.api_key = api_key
@@ -20,9 +34,9 @@ def split_list(array):
     second_slice = int(3*n/4)
     return array[:first_slice], array[first_slice:second_slice], array[second_slice:]
 
-def get_stock_data(stock_full_name):
-    """Queries the data for stock_full_name using Quandl, and gets it into X and y"""
-    stock = quandl.get(stock_full_name)
+def get_stock_data(quandl_id):
+    """Queries the data for quandl_id (stock) using Quandl, and gets it into X and y"""
+    stock = get_quandl_data(quandl_id)
     stock = stock.reset_index(0)
     dates = stock['Date']
     X = [(i, z.value) for i,z in enumerate(dates)]
