@@ -2,6 +2,7 @@
 import quandl
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 from sklearn import linear_model
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVR
@@ -13,6 +14,21 @@ def define_quandl_api_key(api_key):
     """Defines the api_key as the token for using Quandl"""
     quandl.ApiConfig.api_key = api_key
 
+def get_quandl_data(quandl_id):
+    """Download and cache Quandl dataseries"""
+    define_quandl_api_key("5BBkZzTWi4Lmsh8MyRyT")
+    cache_path = 'quandl_data/{}.pkl'.format(quandl_id.replace('/','-'))
+    try:
+        f = open(cache_path, 'rb')
+        df = pickle.load(f)
+        print('Loaded {} from cache'.format(quandl_id))
+    except (OSError, IOError) as e:
+        print('Downloading {} from Quandl'.format(quandl_id))
+        df = quandl.get(quandl_id, returns="pandas")
+        df.to_pickle(cache_path)
+        print('Cached {} at {}'.format(quandl_id, cache_path))
+    return df
+
 def split_list(array):
     """Splits a given array into 3 parts: half, and two quarters"""
     n = len(array)
@@ -20,13 +36,13 @@ def split_list(array):
     second_slice = int(3*n/4)
     return array[:first_slice], array[first_slice:second_slice], array[second_slice:]
 
-def get_stock_data(stock_full_name):
-    """Queries the data for stock_full_name using Quandl, and gets it into X and y"""
-    stock = quandl.get(stock_full_name)
+def split_quandl_data_into_xy(quandl_id):
+    """Queries the data for quandl_id (stock) using Quandl, and gets it into X and y"""
+    stock = get_quandl_data(quandl_id)
     stock = stock.reset_index(0)
     dates = stock['Date']
     X = [(i, z.value) for i,z in enumerate(dates)]
-    y = stock['Adj. Open']
+    y = stock['Last']
     scaler = MinMaxScaler()
     X_scaled = scaler.fit_transform(X)
     return X_scaled, y
@@ -55,8 +71,9 @@ def calculate_best_penalty(X_train, y_train, X_train_penalty, y_train_penalty):
     best_penalty = penalty_values[penalty_scores.index(max(penalty_scores))]
     return best_penalty
 
-define_quandl_api_key("5BBkZzTWi4Lmsh8MyRyT")
-X, y = get_stock_data("WIKI/FB")
+
+quandl_id = "WIKI/GOOGL"
+X, y = split_quandl_data_into_xy(quandl_id)
 X_train, X_train_penalty, X_test, y_train, y_train_penalty, y_test = split_stock_data_into_train_test(X, y)
 best_penalty = calculate_best_penalty(X_train, y_train, X_train_penalty, y_train_penalty)
 predictions = svr_predict_stock_price(best_penalty, X_train, y_train, X_test)
@@ -67,7 +84,7 @@ print("prediction accuracy score:", r2_score(predictions, y_test))
 ax = plt.gca()
 plt.xlabel('time')
 plt.ylabel('value')
-plt.title('Google Stock')
+plt.title(quandl_id)
 plt.plot(X_train, y_train, color='red')
 plt.plot(X_test, y_test, color='blue')
 plt.plot(X_train_penalty, y_train_penalty, color='purple')
