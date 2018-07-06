@@ -4,7 +4,7 @@ from stock_data_retriever import QuandlStockDataRetriver
 
 
 def main():
-    retriver = QuandlStockDataRetriver()
+    retriver = QuandlStockDataRetriver(r'D:\Playground\StockData', '5BBkZzTWi4Lmsh8MyRyT')
     stock = retriver.get_stock_by_name('NFLX')
     predictor = SVRPredictor()
     prediction_x, prediction_y = predictor.test(stock)

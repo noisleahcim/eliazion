@@ -15,11 +15,11 @@ class StockDataRetriver(object):
 
 
 class QuandlStockDataRetriver(StockDataRetriver):
-    def __init__(self):
+    def __init__(self, cache_path, api_key, exchange='WIKI'):
         super().__init__()
-        self.cache_path = r'D:\Playground\StockData'
-        self.exchange = 'WIKI'
-        self._define_quandl_api_key("5BBkZzTWi4Lmsh8MyRyT")
+        self.cache_path = cache_path
+        self.exchange = exchange
+        self._define_quandl_api_key(api_key)
 
     def get_stock_by_name(self, name):
         file_path = os.path.join(self.cache_path, self.exchange + '_' + name.upper())

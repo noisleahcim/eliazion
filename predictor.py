@@ -7,6 +7,9 @@ from sklearn.svm import SVR
 
 
 class Predictor(object):
+    def test(self, stock):
+        pass
+
     def train(self, x, y):
         pass
 
